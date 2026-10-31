@@ -35,13 +35,14 @@ Notes :
 
 ## D. Anomalies SonarQube for IDE (étape 12)
 
-Analyse via *Analyze with SonarQube for IDE* (clic droit sur le projet → package `web.controller`).
+Analyse via *Analyze with SonarQube for IDE* sur `web.controller` → **4 anomalies détectées** (2 fichiers).
 
 | Anomalie SonarQube for IDE | Règle / explication | Correction apportée |
 |---|---|---|
-| ContratController / PaiementController exposent les entités JPA (`Contrat`, `Paiement`) : couplage web ↔ persistance, réponses contenant des attributs internes (`reservation`, `paiements`) | Règle design — une API REST ne doit pas exposer directement les entités de persistance | Correction immédiate appliquée : contrôleurs minces via interfaces `I…Service` (`@RequiredArgsConstructor` + champ `final`, injection par constructeur). Introduction des DTO prévue (Chapitre 10). |
-
-> À compléter avec la **2ᵉ anomalie** relevée par l'analyse IDE (ex. style / gestion d'exception / contrôleur) — mise à jour de ce tableau et de la checklist finale après l'analyse.
+| `ContratController.findById` (l. 46) renvoie l'entité persistante `Contrat` | `java:S4687` « Replace this persistent entity with a simple POJO or DTO object » — exposer l'entité JPA lie l'API web à la persistance (champs internes `reservation`/`paiements` exposés, couplage aux évolutions du schéma) | Volontaire et provisoire (conformément au PDF) : l'exposition est assumée en Atelier 5 ; correction définitive prévue au **Chapitre 10 (DTO)**. Contrôleurs minces garantis : injection par constructeur via interfaces `I…Service` (`@RequiredArgsConstructor` + `final`) |
+| `ContratController.create/update` (l. 51) : `@RequestBody Contrat` — même couplage web ↔ persistance | idem (`java:S4687`) | idem |
+| `GlobalExceptionHandler.handleResourceNotFound` (l. 25) : `LocalDateTime.now()` | « Explicitly specify the time zone by passing a ZoneId or a Clock to the .now() method » — sans fuseau explicite, l'horodatage dépend du fuseau de la machine (décalages selon l'environnement) | Constante `private static final ZoneId ZONE = ZoneId.systemDefault();` puis `LocalDateTime.now(ZONE)` |
+| `GlobalExceptionHandler.handleIllegalArgument` (l. 33) : `LocalDateTime.now()` | idem | idem |
 
 ## E. Questions de compréhension
 
@@ -58,6 +59,7 @@ Analyse via *Analyze with SonarQube for IDE* (clic droit sur le projet → packa
 - [x] SpringDoc 3.2.0 + `OpenApiConfig` + Swagger UI
 - [x] Tests API via HTTP : GET 200, GET-404, POST 201, POST-400, PUT 200, DELETE 204, POST-paiements 405
 - [x] Swagger `/api/v3/api-docs` et `/api/swagger-ui.html` accessibles
+- [x] Anomalies SonarQube for IDE corrigées : `ZoneId` explicite ×2 (`GlobalExceptionHandler`) ; `java:S4687` ×2 documentées (DTO prévus au Chapitre 10)
 
 ## Livrables attendus
 
@@ -72,4 +74,4 @@ Analyse via *Analyze with SonarQube for IDE* (clic droit sur le projet → packa
 - [x] Conventions REST : routes au pluriel, verbes adaptés, codes corrects (200, 201, 204, 400, 404, 405)
 - [x] Tests Postman (nominaux et cas d'erreur) et documentation Swagger complète : tags, résumés, réponses de succès et d'erreur
 - [x] Annotations Jackson pertinentes sans boucle de sérialisation ; observations exactes sur la cascade et la lecture seule de Paiement
-- [ ] Exploitation de SonarQube for IDE (2ᵉ anomalie à confirmer après analyse — voir section D ; tableau en cours)
+- [x] Exploitation de SonarQube for IDE : **4 anomalies relevées** sur `web.controller` (`java:S4687` ×2 + fuseau horaire ×2), 2 corrigées immédiatement et 2 documentées (DTO au Chapitre 10)
