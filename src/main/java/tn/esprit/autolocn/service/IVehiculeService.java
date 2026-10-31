@@ -15,4 +15,13 @@ public interface IVehiculeService {
     Vehicule update(Long id, Vehicule vehicule);
 
     void deleteById(Long id);
+
+    /** Rattache le véhicule à une agence (relation {@code @ManyToOne} bidirectionnelle, scénario 2). */
+    Vehicule affecterVehicule(Long idVehicule, Long idAgence);
+
+    /** Ajoute un équipement au véhicule (relation {@code @ManyToMany} bidirectionnelle, scénario 3). */
+    Vehicule affecterEquipement(Long idVehicule, Long idEquipement);
+
+    /** Retire un équipement du véhicule (scénario 3 — retrait au retour du véhicule). */
+    Vehicule desaffecterEquipement(Long idVehicule, Long idEquipement);
 }
