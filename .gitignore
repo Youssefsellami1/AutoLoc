@@ -31,3 +31,6 @@ build/
 
 ### VS Code ###
 .vscode/
+
+### Notes de travail (rendu hors Git) ###
+docs/
