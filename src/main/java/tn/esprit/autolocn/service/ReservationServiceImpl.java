@@ -3,20 +3,25 @@ package tn.esprit.autolocn.service;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import tn.esprit.autolocn.domain.Reservation;
+import tn.esprit.autolocn.dto.ReservationResponseDto;
 import tn.esprit.autolocn.exception.ResourceNotFoundException;
+import tn.esprit.autolocn.mapper.ReservationMapper;
 import tn.esprit.autolocn.repository.IReservationRepository;
 
 /**
  * Service de la réservation : injection par constructeur, service sans état.
- * Les associations (client, véhicule) sont persistées telles que reçues :
- * leur gestion est au Chapitre 9.
+ * Les associations (client, véhicule) sont persistées telles que reçues ;
+ * la consultation passe par {@link tn.esprit.autolocn.mapper.ReservationMapper}
+ * pour produire des DTO aplatis (activité DTO).
  */
 @Service
 @RequiredArgsConstructor
 public class ReservationServiceImpl implements IReservationService {
 
     private final IReservationRepository reservationRepository;
+    private final ReservationMapper reservationMapper;
 
     @Override
     public Reservation create(Reservation reservation) {
@@ -33,9 +38,22 @@ public class ReservationServiceImpl implements IReservationService {
                 .orElseThrow(() -> new ResourceNotFoundException("Reservation", id));
     }
 
+    /**
+     * Toutes les réservations en DTO. {@code @Transactional} : les associations
+     * Client et Vehicule sont LAZY — elles doivent être lues dans la transaction
+     * (sinon LazyInitializationException au mapping).
+     */
     @Override
-    public List<Reservation> findAll() {
-        return reservationRepository.findAll();
+    @Transactional(readOnly = true)
+    public List<ReservationResponseDto> findAll() {
+        return reservationMapper.toResponseDtoList(reservationRepository.findAll());
+    }
+
+    /** Réservations d'un client (association LAZY lue en transaction), en DTO aplatis. */
+    @Override
+    @Transactional(readOnly = true)
+    public List<ReservationResponseDto> findByClientId(Long idClient) {
+        return reservationMapper.toResponseDtoList(reservationRepository.findByClient_IdClient(idClient));
     }
 
     @Override

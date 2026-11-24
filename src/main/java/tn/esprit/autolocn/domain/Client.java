@@ -27,13 +27,15 @@ public class Client {
     @Column(nullable = false, length = 50)
     private String prenom;
 
-    @Column(nullable = false, unique = true, length = 100)
+    // E-mail et téléphone facultatifs (activité DTO) : la base accepte NULL.
+    // MySQL autorise plusieurs NULL dans une colonne UNIQUE.
+    @Column(unique = true, length = 100)
     private String email;
 
-    @Column(nullable = false, length = 20)
+    @Column(length = 20)
     private String telephone;
 
-    @Column(nullable = false, unique = true, length = 30)
+    @Column(unique = true, length = 30)
     private String numPermis;
 
     @Column(nullable = false)
